@@ -36,7 +36,7 @@ router.post('/addalarm', fetchuser, [
             while (seconds % 60 == 0) {
                 let i = seconds / 60;
                 for (let index = i; index < i; index++) {
-                    min += 60;
+                    minutes += 60;
                 }
                 seconds = 0;
                 break;
@@ -44,7 +44,7 @@ router.post('/addalarm', fetchuser, [
             while (!(seconds % 60 == 0)) {
                 let i = Math.floor(seconds / 60);
                 for (let index = i; index < i; index++) {
-                    min += 60;
+                    minutes += 60;
                 }
                 seconds = seconds - (60 * i);
                 break;
@@ -58,7 +58,7 @@ router.post('/addalarm', fetchuser, [
         }
 
         const alarm = new Alarm({
-            frequency, hour, min, seconds, user: req.user.id
+            frequency, hours, minutes, seconds, user: req.user.id
         });
         const savedAlarm = await alarm.save();
 
