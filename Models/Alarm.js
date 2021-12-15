@@ -5,6 +5,11 @@ const AlarmSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
     },
+    frequency: {
+        type: String,
+        default: Date.now,
+        required: true
+    },
     hour: {
         type: mongoose.Schema.Types.Number,
         default: 0,
