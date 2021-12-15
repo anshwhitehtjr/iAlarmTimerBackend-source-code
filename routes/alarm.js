@@ -27,6 +27,20 @@ router.post('/addalarm', fetchuser, [
 ], async (req, res) => {
     try {
         const { hour, min, sec, frequency } = req.body;
+        const minVal = 60;
+
+        while (sec % 60 == 0) {
+            let i;
+            i = sec / 60;
+            for (let index = i; index < i; index++) {
+                min += 60;
+            }
+            sec = 0;
+            break;
+        }
+        // while (!(sec % 60 == 0)) {
+        //     let secDiff;
+        // }
 
         // If there are errors, return Bad request and the errors
         const errors = validationResult(req);
