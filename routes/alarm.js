@@ -27,20 +27,29 @@ router.post('/addalarm', fetchuser, [
 ], async (req, res) => {
     try {
         const { hour, min, sec, frequency } = req.body;
-        const minVal = 60;
+        let seconds = sec;
+        let minutes = min;
+        let hours = hour;
 
-        while (sec % 60 == 0) {
-            let i;
-            i = sec / 60;
-            for (let index = i; index < i; index++) {
-                min += 60;
+        // Checking of the seconds are more than 60
+        if (seconds >= 60) {
+            while (seconds % 60 == 0) {
+                let i = seconds / 60;
+                for (let index = i; index < i; index++) {
+                    min += 60;
+                }
+                seconds = 0;
+                break;
             }
-            sec = 0;
-            break;
+            while (!(seconds % 60 == 0)) {
+                let i = Math.floor(seconds / 60);
+                for (let index = i; index < i; index++) {
+                    min += 60;
+                }
+                seconds = seconds - (60 * i);
+                break;
+            }
         }
-        // while (!(sec % 60 == 0)) {
-        //     let secDiff;
-        // }
 
         // If there are errors, return Bad request and the errors
         const errors = validationResult(req);
@@ -49,11 +58,11 @@ router.post('/addalarm', fetchuser, [
         }
 
         const alarm = new Alarm({
-            frequency, hour, min, sec, user: req.user.id
+            frequency, hour, min, seconds, user: req.user.id
         });
         const savedAlarm = await alarm.save();
 
-        res.json(`${ frequency },${ hour }:${ min }:${ sec }`);
+        res.json(`${ frequency },${ hour }:${ min }:${ seconds }`);
     } catch (error) {
         console.error(error.message);
         res.status(500).send("Internal Server Error");
