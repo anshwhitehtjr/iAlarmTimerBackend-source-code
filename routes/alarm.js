@@ -20,10 +20,10 @@ router.get('/fetchallalarms', fetchuser, async (req, res) => {
 
 // Route 2: Adding a Alarm using POST "api/alarm/addalarm". requires Login
 router.post('/addalarm', fetchuser, [
-    body('hour').isLength({ max: 2 }),
-    body('min').isLength({ max: 2 }),
-    body('sec').isLength({ max: 2 }),
-    body('frequency').isLength({ min: 2 }),
+    body('hour').isLength({ min: 1 }),
+    body('min').isLength({ min: 1 }),
+    body('sec').isLength({ min: 1 }),
+    body('frequency').isLength({ min: 1 }),
 ], async (req, res) => {
     try {
         const { hour, min, sec, frequency } = req.body;
@@ -31,22 +31,42 @@ router.post('/addalarm', fetchuser, [
         let minutes = min;
         let hours = hour;
 
-        // Checking of the seconds are more than 60
-        if (seconds >= 60) {
+        // Checking of the seconds are more than or equal to 60
+        if ((seconds >= 60) && (seconds != 0)) {
             while (seconds % 60 == 0) {
                 let i = seconds / 60;
-                for (let index = i; index < i; index++) {
-                    minutes += 60;
+                for (let index = 0; index < i; index++) {
+                    minutes += 1;
                 }
                 seconds = 0;
                 break;
             }
             while (!(seconds % 60 == 0)) {
                 let i = Math.floor(seconds / 60);
-                for (let index = i; index < i; index++) {
-                    minutes += 60;
+                for (let index = 0; index < i; index++) {
+                    minutes += 1;
                 }
                 seconds = seconds - (60 * i);
+                break;
+            }
+        }
+
+        // Checking of the minutes are more than or equal to 60
+        if ((minutes >= 60) && (minutes != 0)) {
+            while (minutes % 60 == 0) {
+                let i = minutes / 60;
+                for (let index = i; index < i; index++) {
+                    hours += 1;
+                }
+                minutes = 0;
+                break;
+            }
+            while (!(minutes % 60 == 0)) {
+                let i = Math.floor(minutes / 60);
+                for (let index = 0; index < i; index++) {
+                    hours += 1;
+                }
+                minutes = minutes - (60 * i);
                 break;
             }
         }
@@ -58,11 +78,12 @@ router.post('/addalarm', fetchuser, [
         }
 
         const alarm = new Alarm({
-            frequency, hours, minutes, seconds, user: req.user.id
+            frequency, hour: hours, min: minutes, sec: seconds, user: req.user.id
         });
         const savedAlarm = await alarm.save();
 
-        res.json(`${ frequency },${ hour }:${ min }:${ seconds }`);
+        // res.json(`${ frequency },${ hours }:${ mins }:${ seconds }`);
+        res.json(savedAlarm);
     } catch (error) {
         console.error(error.message);
         res.status(500).send("Internal Server Error");
