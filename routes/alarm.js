@@ -26,7 +26,7 @@ router.post('/addalarm', fetchuser, [
     body('frequency').isLength({ min: 1 }),
 ], async (req, res) => {
     try {
-        const { hour, min, sec, frequency } = req.body;
+        const { hour, min, sec, frequency, desc, state, date } = req.body;
         let seconds = sec;
         let minutes = min;
         let hours = hour;
@@ -78,7 +78,14 @@ router.post('/addalarm', fetchuser, [
         }
 
         const alarm = new Alarm({
-            frequency, hour: hours, min: minutes, sec: seconds, user: req.user.id
+            frequency,
+            desc: desc,
+            date: date,
+            state: state,
+            hour: hours,
+            min: minutes,
+            sec: seconds,
+            user: req.user.id
         });
         const savedAlarm = await alarm.save();
 
@@ -92,15 +99,62 @@ router.post('/addalarm', fetchuser, [
 
 // Route 3: Updating an existing Alarm using PUT "api/alarm/updatealarm". requires Login
 router.put('/updatealarm/:id', fetchuser, async (req, res) => {
-    const { frequency, hour, min, sec } = req.body;
+    const { hour, min, sec, frequency, desc, state, date } = req.body;
 
     try {
+        let seconds = sec;
+        let minutes = min;
+        let hours = hour;
+
+        // Checking of the seconds are more than or equal to 60
+        if ((seconds >= 60) && (seconds != 0)) {
+            while (seconds % 60 == 0) {
+                let i = seconds / 60;
+                for (let index = 0; index < i; index++) {
+                    minutes += 1;
+                }
+                seconds = 0;
+                break;
+            }
+            while (!(seconds % 60 == 0)) {
+                let i = Math.floor(seconds / 60);
+                for (let index = 0; index < i; index++) {
+                    minutes += 1;
+                }
+                seconds = seconds - (60 * i);
+                break;
+            }
+        }
+
+        // Checking of the minutes are more than or equal to 60
+        if ((minutes >= 60) && (minutes != 0)) {
+            while (minutes % 60 == 0) {
+                let i = minutes / 60;
+                for (let index = i; index < i; index++) {
+                    hours += 1;
+                }
+                minutes = 0;
+                break;
+            }
+            while (!(minutes % 60 == 0)) {
+                let i = Math.floor(minutes / 60);
+                for (let index = 0; index < i; index++) {
+                    hours += 1;
+                }
+                minutes = minutes - (60 * i);
+                break;
+            }
+        }
+
         // Create a newTodo object
         const newAlarm = {};
         if (frequency) { newAlarm.frequency = frequency; };
-        if (hour) { newAlarm.hour = hour; };
-        if (min) { newAlarm.min = min; };
-        if (sec) { newAlarm.sec = sec; };
+        if (state) { newAlarm.state = state; };
+        if (desc) { newAlarm.desc = desc; };
+        if (date) { newAlarm.desc = date; };
+        if (hour) { newAlarm.hour = hours; };
+        if (min) { newAlarm.min = minutes; };
+        if (sec) { newAlarm.sec = seconds; };
 
         // Find the note to be updated and update it
         let alarm = await Alarm.findById(req.params.id);
